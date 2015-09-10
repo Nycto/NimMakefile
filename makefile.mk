@@ -99,3 +99,10 @@ profile:
 clean:
 	rm -rf build
 
+
+# Updates to the latest version of
+.PHONY: update-nimmakefile
+update-nimmakefile:
+	cd NimMakefile;
+	git pull origin master;
+

@@ -12,11 +12,15 @@ TESTS ?= $(notdir $(basename $(wildcard test/*_test.nim)))
 
 # Run all targets
 .PHONY: all
-all: readme test
+all: readme test bin
 
 # Run all tests
 .PHONY: test
 test: $(TESTS)
+
+# Build all binaries
+.PHONY: bin
+bin: $(addprefix build/,$(notdir $(basename $(wildcard bin/*.nim))))
 
 
 # Compiles a nim file
@@ -26,6 +30,11 @@ nimble c $(FLAGS) \
 		--out:$(CURDIR)/build/$(notdir $(basename $1)) \
 		$1
 endef
+
+
+# Compile anything in the bin folder
+build/%: bin/%.nim $(shell find . -name "*.nim")
+	$(call COMPILE,$<)
 
 
 # A template for defining targets for a test

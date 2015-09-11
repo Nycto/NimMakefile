@@ -12,7 +12,7 @@ TESTS ?= $(notdir $(basename $(wildcard test/*_test.nim)))
 
 # Run all targets
 .PHONY: all
-all: readme test bin
+all: test bin readme
 
 # Run all tests
 .PHONY: test

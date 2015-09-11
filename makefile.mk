@@ -108,7 +108,8 @@ clean:
 .PHONY: update-nimmakefile
 update-nimmakefile:
 	cd NimMakefile;
-	git pull origin master;
+	get fetch origin;
+	git merge --ff-only origin/master;
 
 
 # Sets up a travis build

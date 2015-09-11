@@ -33,7 +33,7 @@ endef
 
 
 # Compile anything in the bin folder
-build/%: bin/%.nim $(shell find . -name "*.nim")
+build/%: bin/%.nim
 	$(call COMPILE,$<)
 
 

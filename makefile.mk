@@ -23,6 +23,10 @@ test: $(TESTS)
 bin: $(addprefix build/,$(notdir $(basename $(wildcard bin/*.nim))))
 
 
+# Add to the bin path to support travis CI builds
+export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
+
+
 # Compiles a nim file
 define COMPILE
 nimble c $(FLAGS) \
@@ -105,4 +109,14 @@ clean:
 update-nimmakefile:
 	cd NimMakefile;
 	git pull origin master;
+
+
+# Sets up a travis build
+.PHONY: travis-install
+travis-install:
+	git clone -b devel --depth 1 git://github.com/Araq/Nim.git
+	cd Nim && sh bootstrap.sh
+	git clone https://github.com/nim-lang/nimble.git
+	./Nim/bin/nim c --verbosity:0 ./nimble/src/nimble
+	./nimble/src/nimble install --accept
 

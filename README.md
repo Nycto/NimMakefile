@@ -3,6 +3,15 @@ Nim Makefile
 
 A common Makefile for building Nim projects.
 
+Features
+--------
+
+* Building and running tests in the `test` folder
+* Building any binaries in the `bin` folder
+* Compiling any code embedded in the `README.md`
+* Watching for changes and recompiling via `make watch`
+* Setting up the environment for a Travis CI build (see below)
+
 Install
 -------
 

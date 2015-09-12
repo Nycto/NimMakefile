@@ -11,6 +11,7 @@ export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
 
 # Compiles a nim file
 define COMPILE
+@mkdir -p $(dir build/$(or $2,$(basename $1)));
 nimble c $(FLAGS) \
 		--path:. --nimcache:./build/nimcache --verbosity:0 \
 		--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
@@ -25,7 +26,6 @@ all: test bin readme
 
 # Test targets
 build/test/%: test/%.nim $(shell find -name $(patsubst %_test,%,$*).nim)
-	mkdir -p $(dir $@)
 	$(call COMPILE,$<)
 	$@
 
@@ -36,7 +36,6 @@ test: $(addprefix build/,$(basename $(wildcard test/*_test.nim)))
 
 # Compile anything in the bin folder
 build/bin/%: bin/%.nim
-	mkdir -p $(dir $@)
 	$(call COMPILE,$<)
 
 # Build all binaries
@@ -46,7 +45,6 @@ bin: $(addprefix build/,$(basename $(wildcard bin/*.nim)))
 
 # A script that pulls code out of the readme. Source above
 build/readme/extract_code: NimMakefile/extract_readme_code.nim
-	mkdir -p $(dir $@)
 	$(call COMPILE,$<,readme/extract_code)
 
 # Execute the script to extract the source
@@ -56,7 +54,6 @@ build/readme/readme_%.nim: README.md build/readme/extract_code
 
 # Compiles the code in the readme to make sure it works
 build/readme/readme_%: build/readme/readme_%.nim
-	mkdir -p $(dir $@)
 	@echo "Compiling $<"
 	$(call COMPILE,$<,readme/readme_$*)
 	@echo

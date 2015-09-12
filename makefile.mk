@@ -111,7 +111,7 @@ clean:
 .PHONY: update-nimmakefile
 update-nimmakefile:
 	cd NimMakefile;
-	get fetch origin;
+	git fetch origin;
 	git merge --ff-only origin/master;
 
 

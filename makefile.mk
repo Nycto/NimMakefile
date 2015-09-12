@@ -20,7 +20,7 @@ test: $(TESTS)
 
 # Build all binaries
 .PHONY: bin
-bin: $(addprefix build/,$(notdir $(basename $(wildcard bin/*.nim))))
+bin: $(addprefix build/,$(basename $(wildcard bin/*.nim)))
 
 
 # Add to the bin path to support travis CI builds
@@ -31,25 +31,27 @@ export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
 define COMPILE
 nimble c $(FLAGS) \
 		--path:. --nimcache:./build/nimcache --verbosity:0 \
-		--out:$(CURDIR)/build/$(notdir $(basename $1)) \
+		--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
 		$1
 endef
 
 
 # Compile anything in the bin folder
-build/%: bin/%.nim
+build/bin/%: bin/%.nim
+	mkdir -p $(dir $@)
 	$(call COMPILE,$<)
 
 
 # A template for defining targets for a test
 define DEFINE_TEST
 
-build/$1: test/$1.nim $(shell find -name $(patsubst %_test,%,$1).nim)
+build/test/$1: test/$1.nim $(shell find -name $(patsubst %_test,%,$1).nim)
+	mkdir -p $$(dir $$@)
 	$(call COMPILE,test/$1.nim)
 
 .PHONY: $1
-$1: build/$1
-	build/$1
+$1: build/test/$1
+	$$<
 
 endef
 
@@ -58,25 +60,26 @@ $(foreach test,$(TESTS),$(eval $(call DEFINE_TEST,$(test))))
 
 
 # A script that pulls code out of the readme. Source above
-build/extract_readme_code: NimMakefile/extract_readme_code.nim
-	@mkdir -p build
-	$(call COMPILE,NimMakefile/extract_readme_code.nim)
+build/readme/extract_code: NimMakefile/extract_readme_code.nim
+	mkdir -p $(dir $@)
+	$(call COMPILE,$<,readme/extract_code)
 
 # Execute the script to extract the source
-build/readme_%.nim: README.md build/extract_readme_code
-	@build/extract_readme_code
+build/readme/readme_%.nim: README.md build/readme/extract_code
+	@build/readme/extract_code
 	@echo
 
 # Compiles the code in the readme to make sure it works
-build/readme_%: build/readme_%.nim
+build/readme/readme_%: build/readme/readme_%.nim
+	mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	$(call COMPILE,$<)
+	$(call COMPILE,$<,readme/readme_$*)
 	@echo
 	$@
 	@echo
 
 # Define a general rule that compiles all the readme code
-readme: $(addprefix build/readme_,$(shell seq 1 \
+readme: $(addprefix build/readme/readme_,$(shell seq 1 \
 	$(shell grep '```nim' README.md | wc -l)))
 
 

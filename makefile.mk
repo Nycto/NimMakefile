@@ -6,17 +6,13 @@
 SHELL = /bin/bash -o pipefail
 
 
-# A list of all test names
-TESTS ?= $(notdir $(basename $(wildcard test/*_test.nim)))
-
-
 # Run all targets
 .PHONY: all
 all: test bin readme
 
 # Run all tests
 .PHONY: test
-test: $(TESTS)
+test: $(addprefix build/,$(basename $(wildcard test/*_test.nim)))
 
 # Build all binaries
 .PHONY: bin
@@ -42,21 +38,12 @@ build/bin/%: bin/%.nim
 	$(call COMPILE,$<)
 
 
-# A template for defining targets for a test
-define DEFINE_TEST
+# Test targets
+build/test/%: test/%.nim $(shell find -name $(patsubst %_test,%,$*).nim)
+	mkdir -p $(dir $@)
+	$(call COMPILE,$<)
+	$@
 
-build/test/$1: test/$1.nim $(shell find -name $(patsubst %_test,%,$1).nim)
-	mkdir -p $$(dir $$@)
-	$(call COMPILE,test/$1.nim)
-
-.PHONY: $1
-$1: build/test/$1
-	$$<
-
-endef
-
-# Define a target for each test
-$(foreach test,$(TESTS),$(eval $(call DEFINE_TEST,$(test))))
 
 
 # A script that pulls code out of the readme. Source above

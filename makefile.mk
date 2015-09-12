@@ -8,6 +8,9 @@ SHELL = /bin/bash -o pipefail
 # Add to the bin path to support travis CI builds
 export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
 
+# A list of source files
+SOURCES ?= $(wildcard *.nim) $(wildcard private/*.nim)
+
 
 # Compiles a nim file
 define COMPILE
@@ -25,7 +28,7 @@ all: test bin readme
 
 
 # Test targets
-build/test/%: test/%.nim $(shell find -name $(patsubst %_test,%,$*).nim)
+build/test/%_test: test/%_test.nim $(SOURCES)
 	$(call COMPILE,$<)
 	$@
 
@@ -35,7 +38,7 @@ test: $(addprefix build/,$(basename $(wildcard test/*_test.nim)))
 
 
 # Compile anything in the bin folder
-build/bin/%: bin/%.nim
+build/bin/%: bin/%.nim $(SOURCES) $(wildcard bin/private/*.nim)
 	$(call COMPILE,$<)
 
 # Build all binaries
@@ -53,7 +56,7 @@ build/readme/readme_%.nim: README.md build/readme/extract_code
 	@echo
 
 # Compiles the code in the readme to make sure it works
-build/readme/readme_%: build/readme/readme_%.nim
+build/readme/readme_%: build/readme/readme_%.nim $(SOURCES)
 	@echo "Compiling $<"
 	$(call COMPILE,$<,readme/readme_$*)
 	@echo
@@ -68,9 +71,8 @@ readme: $(addprefix build/readme/readme_,$(shell seq 1 \
 # Watches for changes and reruns
 .PHONY: watch
 watch:
-	$(eval MAKEFLAGS += " -s ")
 	@while true; do \
-		make TESTS="$(TESTS)"; \
+		make $(WATCH); \
 		inotifywait -qre close_write `find . -name "*.nim"` README.md \
 			> /dev/null; \
 		echo "Change detected, re-running..."; \

@@ -5,20 +5,6 @@
 # Make sure that any failure in a pipe fails the build
 SHELL = /bin/bash -o pipefail
 
-
-# Run all targets
-.PHONY: all
-all: test bin readme
-
-# Run all tests
-.PHONY: test
-test: $(addprefix build/,$(basename $(wildcard test/*_test.nim)))
-
-# Build all binaries
-.PHONY: bin
-bin: $(addprefix build/,$(basename $(wildcard bin/*.nim)))
-
-
 # Add to the bin path to support travis CI builds
 export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
 
@@ -32,10 +18,9 @@ nimble c $(FLAGS) \
 endef
 
 
-# Compile anything in the bin folder
-build/bin/%: bin/%.nim
-	mkdir -p $(dir $@)
-	$(call COMPILE,$<)
+# Run all targets
+.PHONY: all
+all: test bin readme
 
 
 # Test targets
@@ -44,6 +29,19 @@ build/test/%: test/%.nim $(shell find -name $(patsubst %_test,%,$*).nim)
 	$(call COMPILE,$<)
 	$@
 
+# Run all tests
+.PHONY: test
+test: $(addprefix build/,$(basename $(wildcard test/*_test.nim)))
+
+
+# Compile anything in the bin folder
+build/bin/%: bin/%.nim
+	mkdir -p $(dir $@)
+	$(call COMPILE,$<)
+
+# Build all binaries
+.PHONY: bin
+bin: $(addprefix build/,$(basename $(wildcard bin/*.nim)))
 
 
 # A script that pulls code out of the readme. Source above
@@ -81,12 +79,10 @@ watch:
 		echo "Change detected, re-running..."; \
 	done
 
-
 # Executes the compiler with profiling enabled
 .PHONY: profile
 profile:
 	make FLAGS="--profiler:on --stackTrace:on"
-
 
 # Remove all build artifacts
 .PHONY: clean

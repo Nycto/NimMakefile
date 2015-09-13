@@ -2,11 +2,17 @@
 # Nim oriented build system
 #
 
+
 # Make sure that any failure in a pipe fails the build
 SHELL = /bin/bash -o pipefail
 
 # Add to the bin path to support travis CI builds
 export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
+
+
+# The path to the NimMakefile
+NIMMAKEFILE_DIR ?= $(shell \
+	cd $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)));pwd)
 
 # A list of all test files
 TESTS ?= $(wildcard test/*_test.nim)
@@ -28,7 +34,7 @@ DEPENDENCIES_BIN = $(CURDIR)/build/dependencies
 # Compile the dependency extractor
 $(shell test -f $(DEPENDENCIES_BIN) || (which nim > /dev/null && \
 	nim c --nimcache:./build/nimcache --verbosity:0 \
-		--out:$(DEPENDENCIES_BIN) NimMakefile/dependencies.nim))
+		--out:$(DEPENDENCIES_BIN) $(NIMMAKEFILE_DIR)/dependencies.nim))
 
 # Returns the dependencies for a file
 DEPENDENCIES = $(shell test -f $(DEPENDENCIES_BIN) && $(DEPENDENCIES_BIN) $1)
@@ -79,7 +85,7 @@ bin: $(addprefix build/,$(basename $(BINS)))
 
 
 # A script that pulls code out of the readme. Source above
-build/readme/extract_code: NimMakefile/extract_readme_code.nim
+build/readme/extract_code: $(NIMMAKEFILE_DIR)/extract_readme_code.nim
 	$(call COMPILE,$<,readme/extract_code)
 
 # Execute the script to extract the source

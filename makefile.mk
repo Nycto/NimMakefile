@@ -123,7 +123,16 @@ update-nimmakefile:
 	git merge --ff-only origin/master;
 
 
-# Sets up a travis build
+# Sets up the travis.yml file needed to do a build
+.PHONY: travis-setup
+travis-setup:
+	echo "os: linux" > .travis.yml
+	echo "language: c" >> .travis.yml
+	echo "install: make travis-install" >> .travis.yml
+	echo "script: make" >> .travis.yml
+
+
+# Downloads everything necessary to run a build on a Travis CI box
 .PHONY: travis-install
 travis-install:
 	git clone -b devel --depth 1 git://github.com/Araq/Nim.git

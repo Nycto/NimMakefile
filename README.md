@@ -29,13 +29,17 @@ Once that is done, you can run `make` to compile your Nim project.
 Travis CI Integration
 ---------------------
 
-To support building your Nim project with Travis CI, you can add a file named
-`.travis.yml` to your project with the following content:
+To support building your Nim project with Travis CI, you can run the following
+command:
 
 ```
-os: linux
-language: c
-install: make travis-install
-script: make
+make travis-setup
+```
+
+Then, you just need to check in the `.travis.yml` file:
+
+```
+git add .travis.yml
+git commit
 ```
 

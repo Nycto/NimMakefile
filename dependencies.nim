@@ -2,7 +2,7 @@
 ## Lists the dependencies of a nim file
 ##
 
-import strutils, os, options, sequtils
+import strutils, os, options, sequtils, sets
 
 iterator importLines( file: string ): string =
     ## Returns lines starting with 'import' or 'include'
@@ -29,12 +29,26 @@ proc locate( dependency: string ): Option[string] =
     else:
         return none(string)
 
-iterator dependencies( path: string ): string =
-    ## Yields the dependencies for a file
+iterator directDependencies( path: string ): string =
+    ## Yields the direct dependencies for a file
+    var seen = initSet[string]()
     for dependency in imports(path):
         let found = locate(dependency)
-        if found.isSome:
+        if found.isSome and not seen.contains(found.get):
+            seen.incl(found.get)
             yield found.get
+
+iterator dependencies( path: string ): string =
+    ## Yields recursive dependencies for a file
+    var next = toSeq(directDependencies(path))
+    var seen = toSet(next)
+    while next.len > 0:
+        let popped = next.pop
+        for depends in directDependencies(popped):
+            if not seen.contains(depends):
+                seen.incl(depends)
+                next.add(depends)
+        yield popped
 
 for file in commandLineParams():
     for dependency in dependencies(file):

@@ -8,17 +8,33 @@ SHELL = /bin/bash -o pipefail
 # Add to the bin path to support travis CI builds
 export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
 
-# A list of source files
-SOURCES ?= $(wildcard *.nim) $(wildcard private/*.nim)
+# A list of all test files
+TESTS ?= $(wildcard test/*_test.nim)
+
+# A list of binaries
+BINS ?= $(wildcard bin/*.nim)
+
+# A list of sources
+SOURCES ?= $(wildcard *.nim) \
+	$(shell find src private -name "*.nim" 2> /dev/null)
+
+
+# Create the build directory
+$(shell mkdir -p build)
+
+# Compile the dependency extractor
+$(shell test -f $(CURDIR)/build/dependencies || \
+	nim c --nimcache:./build/nimcache --verbosity:0 \
+		--out:$(CURDIR)/build/dependencies NimMakefile/dependencies.nim)
 
 
 # Compiles a nim file
 define COMPILE
-@mkdir -p $(dir build/$(or $2,$(basename $1)));
+@mkdir -p $(dir build/$(or $2,$(basename $1))); \
 nimble c $(FLAGS) \
-		--path:. --nimcache:./build/nimcache --verbosity:0 \
-		--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
-		$1
+	--path:. --nimcache:./build/nimcache --verbosity:0 \
+	--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
+	$1
 endef
 
 
@@ -28,22 +44,32 @@ all: test bin readme
 
 
 # Test targets
-build/test/%_test: test/%_test.nim $(SOURCES)
-	$(call COMPILE,$<)
-	$@
+define TEST_RULE
+build/$(basename $1): $1 $(shell ./build/dependencies $1)
+	$(call COMPILE,$1)
+	$$@
+endef
+
+# Define a target for each test file
+$(foreach test,$(TESTS),$(eval $(call TEST_RULE,$(test))))
 
 # Run all tests
 .PHONY: test
-test: $(addprefix build/,$(basename $(wildcard test/*_test.nim)))
+test: $(addprefix build/,$(basename $(TESTS)))
 
 
-# Compile anything in the bin folder
-build/bin/%: bin/%.nim $(SOURCES) $(wildcard bin/private/*.nim)
-	$(call COMPILE,$<)
+# Binary target
+define BIN_RULE
+build/$(basename $1): $1 $(shell ./build/dependencies $1)
+	$(call COMPILE,$1)
+endef
+
+# Define a target for each binary file
+$(foreach bin,$(BINS),$(eval $(call BIN_RULE,$(bin))))
 
 # Build all binaries
 .PHONY: bin
-bin: $(addprefix build/,$(basename $(wildcard bin/*.nim)))
+bin: $(addprefix build/,$(basename $(BINS)))
 
 
 # A script that pulls code out of the readme. Source above

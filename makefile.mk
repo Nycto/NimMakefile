@@ -97,7 +97,7 @@ build/readme/readme_%: build/readme/readme_%.nim $(SOURCES)
 
 # Define a general rule that compiles all the readme code
 readme: $(addprefix build/readme/readme_,$(shell seq 1 \
-	$(shell grep '```nim' README.md | wc -l)))
+	$(shell cat README.md 2> /dev/null | grep '```nim' | wc -l)))
 
 
 # Watches for changes and reruns

@@ -24,6 +24,9 @@ BINS ?= $(wildcard bin/*.nim)
 SOURCES ?= $(wildcard *.nim) \
 	$(shell find src private -name "*.nim" 2> /dev/null)
 
+# The compiler to use
+COMPILER ?= $(if $(wildcard *.nimble),nimble,nim)
+
 
 # Create the build directory
 $(shell mkdir -p build)
@@ -43,7 +46,7 @@ DEPENDENCIES = $(shell test -f $(DEPENDENCIES_BIN) && $(DEPENDENCIES_BIN) $1)
 # Compiles a nim file
 define COMPILE
 @mkdir -p $(dir build/$(or $2,$(basename $1))); \
-nimble c $(FLAGS) \
+$(COMPILER) c $(FLAGS) \
 	--path:. --nimcache:./build/nimcache --verbosity:0 \
 	--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
 	$1

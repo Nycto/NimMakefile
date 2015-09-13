@@ -10,6 +10,7 @@ Features
 * Building any binaries in the `bin` folder
 * Compiling any code embedded in the `README.md`
 * Watching for changes and recompiling via `make watch`
+* Dependency analysis to reduce unnecessary rebuilds
 * Setting up the environment for a Travis CI build (see below)
 
 Install

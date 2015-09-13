@@ -20,6 +20,7 @@ TESTS ?= $(wildcard test/*_test.nim)
 # A list of binaries
 BINS ?= $(wildcard bin/*.nim)
 
+
 # A list of sources
 SOURCES ?= $(wildcard *.nim) \
 	$(shell find src private -name "*.nim" 2> /dev/null)
@@ -114,7 +115,10 @@ readme: $(addprefix build/readme/readme_,$(shell seq 1 \
 watch:
 	@while true; do \
 		make $(WATCH); \
-		inotifywait -qre close_write `find . -name "*.nim"` README.md \
+		inotifywait -qre close_write \
+			$(SOURCES) $(TESTS) $(BINS) \
+			$(shell $(DEPENDENCIES_BIN) $(SOURCES) $(TESTS) $(BINS)) \
+			$(wildcard README.md) \
 			> /dev/null; \
 		echo "Change detected, re-running..."; \
 	done

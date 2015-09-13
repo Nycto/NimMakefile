@@ -53,5 +53,6 @@ iterator dependencies( path: string ): string =
 for file in commandLineParams():
     for dependency in dependencies(file):
         stdout.write(" ", dependency)
-    stdout.write("\n")
+
+stdout.write("\n")
 

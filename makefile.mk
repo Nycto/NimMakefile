@@ -61,7 +61,7 @@ all: test bin readme
 
 # Test targets
 define TEST_RULE
-build/$(basename $1): $1 $(call dependencies,$1)
+build/$(basename $1): $1 $(call dependencies,$1) $(wildcard *.nimble)
 	$(call COMPILE,$1)
 	$$@
 endef
@@ -76,7 +76,7 @@ test: $(addprefix build/,$(basename $(TESTS)))
 
 # Binary target
 define BIN_RULE
-build/$(basename $1): $1 $(call dependencies,$1)
+build/$(basename $1): $1 $(call dependencies,$1) $(wildcard *.nimble)
 	$(call COMPILE,$1)
 endef
 
@@ -98,7 +98,7 @@ build/readme/readme_%.nim: README.md build/readme/extract_code
 	@echo
 
 # Compiles the code in the readme to make sure it works
-build/readme/readme_%: build/readme/readme_%.nim $(SOURCES)
+build/readme/readme_%: build/readme/readme_%.nim $(SOURCES) $(wildcard *.nimble)
 	@echo "Compiling $<"
 	$(call COMPILE,$<,readme/readme_$*)
 	@echo
@@ -116,7 +116,7 @@ watch:
 	@while true; do \
 		make $(WATCH); \
 		inotifywait -qre close_write \
-			$(SOURCES) $(TESTS) $(BINS) \
+			$(SOURCES) $(TESTS) $(BINS) $(wildcard *.nimble) \
 			$(shell $(DEPENDENCIES_BIN) $(SOURCES) $(TESTS) $(BINS)) \
 			$(wildcard README.md) \
 			> /dev/null; \

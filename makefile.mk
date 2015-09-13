@@ -22,10 +22,16 @@ SOURCES ?= $(wildcard *.nim) \
 # Create the build directory
 $(shell mkdir -p build)
 
+# The location of the binary for pulling dependencies
+DEPENDENCIES_BIN = $(CURDIR)/build/dependencies
+
 # Compile the dependency extractor
-$(shell test -f $(CURDIR)/build/dependencies || \
+$(shell test -f $(DEPENDENCIES_BIN) || (which nim > /dev/null && \
 	nim c --nimcache:./build/nimcache --verbosity:0 \
-		--out:$(CURDIR)/build/dependencies NimMakefile/dependencies.nim)
+		--out:$(DEPENDENCIES_BIN) NimMakefile/dependencies.nim))
+
+# Returns the dependencies for a file
+DEPENDENCIES = $(shell test -f $(DEPENDENCIES_BIN) && $(DEPENDENCIES_BIN) $1)
 
 
 # Compiles a nim file
@@ -45,7 +51,7 @@ all: test bin readme
 
 # Test targets
 define TEST_RULE
-build/$(basename $1): $1 $(shell ./build/dependencies $1)
+build/$(basename $1): $1 $(call dependencies,$1)
 	$(call COMPILE,$1)
 	$$@
 endef
@@ -60,7 +66,7 @@ test: $(addprefix build/,$(basename $(TESTS)))
 
 # Binary target
 define BIN_RULE
-build/$(basename $1): $1 $(shell ./build/dependencies $1)
+build/$(basename $1): $1 $(call dependencies,$1)
 	$(call COMPILE,$1)
 endef
 

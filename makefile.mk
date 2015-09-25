@@ -63,7 +63,11 @@ all: test bin readme
 define TEST_RULE
 build/$(basename $1): $1 $(call dependencies,$1) $(wildcard *.nimble)
 	$(call COMPILE,$1)
-	$$@
+
+build/test_run/$(basename $1): build/$(basename $1)
+	build/$(basename $1)
+	@mkdir -p $(dir build/test_run/$(basename $1))
+	@touch build/test_run/$(basename $1)
 endef
 
 # Define a target for each test file
@@ -71,7 +75,7 @@ $(foreach test,$(TESTS),$(eval $(call TEST_RULE,$(test))))
 
 # Run all tests
 .PHONY: test
-test: $(addprefix build/,$(basename $(TESTS)))
+test: $(addprefix build/test_run/,$(basename $(TESTS)))
 
 
 # Binary target

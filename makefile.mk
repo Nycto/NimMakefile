@@ -61,7 +61,7 @@ all: test bin readme
 
 # Test targets
 define TEST_RULE
-build/$(basename $1): $1 $(call dependencies,$1) $(wildcard *.nimble)
+build/$(basename $1): $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
 	$(call COMPILE,$1)
 
 build/test_run/$(basename $1): build/$(basename $1)
@@ -80,7 +80,7 @@ test: $(addprefix build/test_run/,$(basename $(TESTS)))
 
 # Binary target
 define BIN_RULE
-build/$(basename $1): $1 $(call dependencies,$1) $(wildcard *.nimble)
+build/$(basename $1): $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
 	$(call COMPILE,$1)
 endef
 

@@ -1,4 +1,4 @@
-Nim Makefile
+Nim Makefile [![Build Status](https://travis-ci.org/Nycto/NimMakefile.svg?branch=master)](https://travis-ci.org/Nycto/NimMakefile)
 ============
 
 A common Makefile for building Nim projects.

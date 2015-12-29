@@ -43,3 +43,7 @@ git add .travis.yml
 git commit
 ```
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Nycto/nimmakefile/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+

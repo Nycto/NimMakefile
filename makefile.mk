@@ -160,7 +160,9 @@ travis-setup:
 travis-install:
 	git clone -b devel --depth 1 git://github.com/Araq/Nim.git
 	cd Nim && sh bootstrap.sh
+	./Nim/bin/nim -v
 	git clone https://github.com/nim-lang/nimble.git
 	./Nim/bin/nim c --verbosity:0 ./nimble/src/nimble
+	./nimble/src/nimble -v
 	./nimble/src/nimble install --accept
 

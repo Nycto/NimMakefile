@@ -37,7 +37,7 @@ DEPENDENCIES_BIN = $(CURDIR)/build/dependencies
 
 # Compile the dependency extractor
 $(shell test -f $(DEPENDENCIES_BIN) || (which nim > /dev/null && \
-	nim c --nimcache:./build/nimcache --verbosity:0 \
+	nim c --nimcache:./build/nimcache --verbosity:0 "--hint[Processing]:off" \
 		--out:$(DEPENDENCIES_BIN) $(NIMMAKEFILE_DIR)/dependencies.nim))
 
 # Returns the dependencies for a file
@@ -48,7 +48,7 @@ DEPENDENCIES = $(shell test -f $(DEPENDENCIES_BIN) && $(DEPENDENCIES_BIN) $1)
 define COMPILE
 @mkdir -p $(dir build/$(or $2,$(basename $1))); \
 $(COMPILER) c $(FLAGS) \
-	--path:. --nimcache:./build/nimcache --verbosity:0 \
+--path:. --nimcache:./build/nimcache --verbosity:0 "--hint[Processing]:off" \
 	--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
 	$1
 endef

@@ -28,6 +28,8 @@ SOURCES ?= $(wildcard *.nim) \
 # The compiler to use
 COMPILER ?= $(if $(wildcard *.nimble),nimble,nim)
 
+# primary compiler flags
+CORE_FLAGS ?= --verbosity:0 --hint[Processing]:off --hint[XDeclaredButNotUsed]:off
 
 # Create the build directory
 $(shell mkdir -p build)
@@ -37,7 +39,7 @@ DEPENDENCIES_BIN = $(CURDIR)/build/dependencies
 
 # Compile the dependency extractor
 $(shell test -f $(DEPENDENCIES_BIN) || (which nim > /dev/null && \
-	nim c --nimcache:./build/nimcache --verbosity:0 "--hint[Processing]:off" \
+	nim c $(CORE_FLAGS) --nimcache:./build/nimcache \
 		--out:$(DEPENDENCIES_BIN) $(NIMMAKEFILE_DIR)/dependencies.nim))
 
 # Returns the dependencies for a file
@@ -47,8 +49,8 @@ DEPENDENCIES = $(shell test -f $(DEPENDENCIES_BIN) && $(DEPENDENCIES_BIN) $1)
 # Compiles a nim file
 define COMPILE
 @mkdir -p $(dir build/$(or $2,$(basename $1))); \
-$(COMPILER) c $(FLAGS) \
---path:. --nimcache:./build/nimcache --verbosity:0 "--hint[Processing]:off" \
+$(COMPILER) c $(CORE_FLAGS) $(FLAGS) \
+	--path:. --nimcache:./build/nimcache \
 	--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
 	$1
 endef

@@ -11,7 +11,10 @@ test: $(wildcard test/*)
 define DEFINE_TEST
 .PHONY: $1
 $1:
-	cd $1 && make
+	@echo
+	@echo Running $1
+	@if [ -f $1/SHOULD_FAIL ]; then if (cd $1 && make); then exit 1; fi; else cd $1 && make; fi
+	@echo PASSED
 endef
 
 # Define build rules for each test directory

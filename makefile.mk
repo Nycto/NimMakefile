@@ -20,17 +20,28 @@ TESTS ?= $(wildcard test/*_test.nim)
 # A list of binaries
 BINS ?= $(wildcard bin/*.nim)
 
+# The name of this project
+PROJECT ?= $(basename $(firstword $(wildcard *.nimble)))
+
+# Require that a nimble file exists
+_ := $(or $(PROJECT),\
+	$(error Could not determine Project name. Please create a nimble file or define PROJECT))
+
+# Publicly includable sources
+PUBLIC_SOURCES = $(wildcard *.nim) $(shell find $(PROJECT) -name "*.nim" 2> /dev/null)
 
 # A list of sources
 SOURCES ?= $(wildcard *.nim) \
-	$(shell find private \
-		$(foreach file,$(wildcard *.nim),$(basename $(file))) -name "*.nim" 2> /dev/null)
+	$(shell find private $(PROJECT) -name "*.nim" 2> /dev/null)
 
 # The compiler to use
-COMPILER ?= $(if $(wildcard *.nimble),nimble,nim)
+COMPILER ?= nimble
 
 # primary compiler flags
 CORE_FLAGS ?= --verbosity:0 --hint[Processing]:off --hint[XDeclaredButNotUsed]:off
+
+# The location of the nimcache
+NIMCACHE ?= ./build/nimcache
 
 # Create the build directory
 $(shell mkdir -p build)
@@ -40,7 +51,7 @@ DEPENDENCIES_BIN = $(CURDIR)/build/dependencies
 
 # Compile the dependency extractor
 $(shell test -f $(DEPENDENCIES_BIN) || (which nim > /dev/null && \
-	nim c $(CORE_FLAGS) --nimcache:./build/nimcache \
+	nim c $(CORE_FLAGS) --nimcache:$(NIMCACHE) \
 		--out:$(DEPENDENCIES_BIN) $(NIMMAKEFILE_DIR)/dependencies.nim))
 
 # Returns the dependencies for a file
@@ -51,7 +62,7 @@ DEPENDENCIES = $(shell test -f $(DEPENDENCIES_BIN) && $(DEPENDENCIES_BIN) $1)
 define COMPILE
 @mkdir -p $(dir build/$(or $2,$(basename $1))); \
 $(COMPILER) c $(CORE_FLAGS) $(FLAGS) \
-	--path:. --nimcache:./build/nimcache \
+	--path:. --nimcache:$(NIMCACHE) \
 	--out:$(CURDIR)/build/$(or $2,$(basename $1)) \
 	$1
 endef
@@ -59,7 +70,25 @@ endef
 
 # Run all targets
 .PHONY: all
-all: test bin readme
+all: sources test bin readme
+
+# The list of files created when compiling the public sources
+PUBLIC_SOURCES_TARGETS := $(patsubst %.nim,build/sources/%,$(PUBLIC_SOURCES))
+
+
+# Public source targets
+define SOURCE_RULE
+build/sources/$(basename $1): $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
+	$(call COMPILE,$1,sources/$(basename $1))
+endef
+
+# Define a target for each source file
+$(foreach file,$(SOURCES),$(eval $(call SOURCE_RULE,$(file))))
+
+
+# Compiling all source files
+.PHONY: sources
+sources: $(addprefix build/sources/,$(basename $(PUBLIC_SOURCES)))
 
 
 # Test targets

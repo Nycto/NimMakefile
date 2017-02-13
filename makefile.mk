@@ -42,8 +42,10 @@ CORE_FLAGS ?= --verbosity:0 --hint[Processing]:off --hint[XDeclaredButNotUsed]:o
 # The location of the nimcache
 NIMCACHE ?= ./build/nimcache
 
+
 # Create the build directory
 $(shell mkdir -p build)
+
 
 # The location of the binary for pulling dependencies
 DEPENDENCIES_BIN = $(CURDIR)/build/dependencies
@@ -75,6 +77,8 @@ all: sources test bin readme
 # Public source targets
 define SOURCE_RULE
 build/sources/$(basename $1).bin: $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
+	@echo
+	@echo "$1"
 	$(call COMPILE,$1,sources/$(basename $1).bin)
 endef
 
@@ -89,9 +93,12 @@ sources: $(patsubst %.nim,build/sources/%.bin,$(PUBLIC_SOURCES))
 # Test targets
 define TEST_RULE
 build/$(basename $1): $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
+	@echo
+	@echo "$1"
 	$(call COMPILE,$1)
 
 build/test_run/$(basename $1): build/$(basename $1)
+	@echo
 	build/$(basename $1)
 	@mkdir -p $(dir build/test_run/$(basename $1))
 	@touch build/test_run/$(basename $1)
@@ -108,6 +115,8 @@ test: $(addprefix build/test_run/,$(basename $(TESTS)))
 # Binary target
 define BIN_RULE
 build/$(basename $1): $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
+	@echo
+	@echo "$1"
 	$(call COMPILE,$1)
 endef
 
@@ -130,7 +139,7 @@ build/readme/readme_%.nim: README.md build/readme/extract_code
 
 # Compiles the code in the readme to make sure it works
 build/readme/readme_%: build/readme/readme_%.nim $(SOURCES) $(wildcard *.nimble)
-	@echo "Compiling $<"
+	@echo "$<"
 	$(call COMPILE,$<,readme/readme_$*)
 	@echo
 	$@

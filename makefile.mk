@@ -27,12 +27,11 @@ PROJECT ?= $(basename $(firstword $(wildcard *.nimble)))
 _ := $(or $(PROJECT),\
 	$(error Could not determine Project name. Please create a nimble file or define PROJECT))
 
-# Publicly includable sources
-PUBLIC_SOURCES = $(wildcard *.nim) $(shell find $(PROJECT) -name "*.nim" 2> /dev/null)
-
 # A list of sources
-SOURCES ?= $(wildcard *.nim) \
-	$(shell find private $(PROJECT) -name "*.nim" 2> /dev/null)
+SOURCES ?= $(wildcard $(PROJECT).nim) $(shell find $(PROJECT) -name "*.nim" 2> /dev/null)
+
+# Publicly includable sources
+PUBLIC_SOURCES ?= $(foreach src,$(SOURCES),$(if $(findstring /private/,$(src)),,$(src)))
 
 # The compiler to use
 COMPILER ?= nimble
@@ -72,23 +71,19 @@ endef
 .PHONY: all
 all: sources test bin readme
 
-# The list of files created when compiling the public sources
-PUBLIC_SOURCES_TARGETS := $(patsubst %.nim,build/sources/%,$(PUBLIC_SOURCES))
-
 
 # Public source targets
 define SOURCE_RULE
-build/sources/$(basename $1): $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
-	$(call COMPILE,$1,sources/$(basename $1))
+build/sources/$(basename $1).bin: $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
+	$(call COMPILE,$1,sources/$(basename $1).bin)
 endef
 
 # Define a target for each source file
 $(foreach file,$(SOURCES),$(eval $(call SOURCE_RULE,$(file))))
 
-
 # Compiling all source files
 .PHONY: sources
-sources: $(addprefix build/sources/,$(basename $(PUBLIC_SOURCES)))
+sources: $(patsubst %.nim,build/sources/%.bin,$(PUBLIC_SOURCES))
 
 
 # Test targets

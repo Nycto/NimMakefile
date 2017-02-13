@@ -23,7 +23,8 @@ BINS ?= $(wildcard bin/*.nim)
 
 # A list of sources
 SOURCES ?= $(wildcard *.nim) \
-	$(shell find src private -name "*.nim" 2> /dev/null)
+	$(shell find private \
+		$(foreach file,$(wildcard *.nim),$(basename $(file))) -name "*.nim" 2> /dev/null)
 
 # The compiler to use
 COMPILER ?= $(if $(wildcard *.nimble),nimble,nim)

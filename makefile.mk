@@ -7,7 +7,7 @@
 SHELL = /bin/bash -o pipefail
 
 # Add to the bin path to support travis CI builds
-export PATH := $(CURDIR)/nimble/src:$(CURDIR)/Nim/bin:$(PATH)
+export PATH := $(CURDIR)/Nim/bin:$(PATH)
 
 
 # The path to the NimMakefile
@@ -161,10 +161,7 @@ travis-setup:
 .PHONY: travis-install
 travis-install:
 	git clone -b devel --depth 1 git://github.com/Araq/Nim.git
-	cd Nim && sh bootstrap.sh
+	cd Nim && sh ci/build.sh && ./koch nimble
 	./Nim/bin/nim -v
-	git clone https://github.com/nim-lang/nimble.git
-	./Nim/bin/nim c --verbosity:0 ./nimble/src/nimble
-	./nimble/src/nimble -v
-	./nimble/src/nimble install --accept
+	./Nim/bin/nimble -v
 

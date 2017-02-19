@@ -20,7 +20,7 @@ You can add this Makefile to your project with the following commands:
 
 ```
 git submodule add https://github.com/Nycto/NimMakefile;
-echo '$(shell git submodule update --init NimMakefile)' > Makefile;
+echo '$(info $(shell (git submodule status NimMakefile | grep -sP "^-") && git submodule update --init NimMakefile))' > Makefile;
 echo 'include NimMakefile/makefile.mk' >> Makefile;
 ```
 

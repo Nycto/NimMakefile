@@ -74,9 +74,13 @@ endef
 all: sources test bin readme
 
 
+# Takes a list of source files and returns the target files that represent whether they
+# have been compiled
+source_targets = $(patsubst %.nim,build/sources/%.bin,$1)
+
 # Public source targets
 define SOURCE_RULE
-build/sources/$(basename $1).bin: $1 $(call DEPENDENCIES,$1) $(wildcard *.nimble)
+$(call source_targets,$1): $1 $(call source_targets,$(call DEPENDENCIES,$1)) $(wildcard *.nimble)
 	@echo
 	@echo "$1"
 	$(call COMPILE,$1,sources/$(basename $1).bin)
@@ -87,7 +91,7 @@ $(foreach file,$(SOURCES),$(eval $(call SOURCE_RULE,$(file))))
 
 # Compiling all source files
 .PHONY: sources
-sources: $(patsubst %.nim,build/sources/%.bin,$(PUBLIC_SOURCES))
+sources: $(call source_targets,$(PUBLIC_SOURCES))
 
 
 # Test targets

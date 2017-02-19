@@ -80,7 +80,8 @@ source_targets = $(patsubst %.nim,build/sources/%.bin,$1)
 
 # Public source targets
 define SOURCE_RULE
-$(call source_targets,$1): $1 $(call source_targets,$(call DEPENDENCIES,$1)) $(wildcard *.nimble)
+$(call source_targets,$1): $1 $(wildcard *.nimble) \
+		$(call DEPENDENCIES,$1) $(call source_targets,$(call DEPENDENCIES,$1))
 	@echo
 	@echo "$1"
 	$(call COMPILE,$1,sources/$(basename $1).bin)
